@@ -18,7 +18,7 @@ export async function requireUser() {
 export async function getCurrentProfile() {
   const user = await requireUser();
   const supabase = await createClient();
-  const { data, error } = await supabase.from("profiles").select("id, username, name, xp, level, streak, avatar_url").eq("id", user.id).maybeSingle();
+  const { data, error } = await supabase.from("profiles").select("id, username, name, xp, level, streak, avatar_url, role, headline, location, bio, website, linkedin_url, resume_summary, portfolio_visible, college_name").eq("id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load your profile.");
   return data;
 }

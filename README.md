@@ -40,7 +40,7 @@ Open `http://localhost:3000`. Before deploying, run `npm run typecheck`, `npm ru
 
 ### Next milestone (requires approval)
 
-Implement friend circles, leaderboards, challenges, and communities.
+Build portfolio presentation, recruiter-facing profiles, resume export, and certificates.
 
 ## Milestone 2 — Authentication, profiles, and application shell
 
@@ -66,3 +66,19 @@ Run `drizzle/migrations/0001_learning_progress.sql` in the Supabase SQL Editor a
 Run `drizzle/migrations/0002_project_reviews.sql` after the first two migrations. Add `SUPABASE_SERVICE_ROLE_KEY`, `OPENAI_API_KEY`, and optionally `GITHUB_TOKEN` to `.env.local`; never expose any of them with a `NEXT_PUBLIC_` prefix.
 
 Students submit a public `https://github.com/<owner>/<repo>` URL. Server-side code allows only that exact host, reads a bounded set of supported text source files, and does not persist the snapshot. The review uses the OpenAI Responses API with `store: false` and strict JSON Schema, then stores only the structured review. Project review writes use an admin-only server client after the authenticated user is verified; browser clients cannot create or alter project scores or review rows.
+
+## Milestone 5 — Community, challenges, and leaderboards
+
+Run `drizzle/migrations/0003_social_learning.sql`. It adds private friend circles, invite codes, active challenges, time-bounded XP events, and a server-calculated leaderboard function for global, friends, and college views. Challenge and level rewards are awarded only through PostgreSQL functions, not direct browser writes.
+
+## Milestone 6 — Career platform
+
+Run `drizzle/migrations/0004_career_platform.sql`. It adds public portfolios, verified certificates, printable resumes, recruiter roles, job publishing, and profile-based job applications. Recruiter roles are deliberately not user-editable; assign them through an audited admin process in Supabase.
+
+## Production launch checklist
+
+- Configure Supabase, GitHub OAuth, Google OAuth, OpenAI, and optional GitHub API token secrets in the deployment environment.
+- Apply migrations `0000` through `0004` in order.
+- Add Stripe, Resend, PostHog, and Sentry credentials when those integrations are enabled; keep their keys server-side where required.
+- Run `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` in CI before deploying to Vercel.
+- Add a scheduled job to create fresh daily and weekly challenges, and move lengthy AI reviews to a background queue before high-volume production traffic.

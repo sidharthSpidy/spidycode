@@ -1,13 +1,14 @@
 "use server";
 
-import { headers } from "next/headers";
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/supabase/server";
+import { getApplicationUrl } from "@/lib/url";
 
 export type AuthState = { error?: string; message?: string };
 const credentialsSchema = z.object({ email: z.string().trim().email("Enter a valid email address."), password: z.string().min(8, "Password must contain at least 8 characters.") });
-const safeNext = (value: FormDataEntryValue | null) => typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+const safeNext = (value: FormDataEntryValue | null): Route => (typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard") as Route;
 
 export async function signIn(_: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = credentialsSchema.safeParse(Object.fromEntries(formData));
@@ -21,7 +22,7 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
 export async function signUp(_: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = credentialsSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-  const origin = (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_APP_URL!;
+  const origin = getApplicationUrl();
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { emailRedirectTo: `${origin}/auth/callback` } });
   if (error) return { error: "We couldn’t create your account. Try a different email." };
@@ -29,9 +30,9 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
 }
 
 export async function signInWithOAuth(provider: "github" | "google") {
-  const origin = (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_APP_URL!;
+  const origin = getApplicationUrl();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: `${origin}/auth/callback` } });
   if (error || !data.url) redirect("/login?error=oauth");
-  redirect(data.url);
+  redirect(data.url as never);
 }

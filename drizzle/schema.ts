@@ -3,6 +3,7 @@ import { boolean, check, integer, jsonb, pgEnum, pgTable, primaryKey, text, time
 
 export const roadmapDifficulty = pgEnum("roadmap_difficulty", ["beginner", "intermediate", "advanced"]);
 export const projectStatus = pgEnum("project_status", ["not_started", "in_progress", "submitted", "approved", "needs_changes"]);
+export const profileRole = pgEnum("profile_role", ["learner", "recruiter", "admin"]);
 
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey(),
@@ -14,6 +15,8 @@ export const profiles = pgTable("profiles", {
   xp: integer("xp").notNull().default(0),
   level: integer("level").notNull().default(1),
   streak: integer("streak").notNull().default(0),
+  role: profileRole("role").notNull().default("learner"),
+  headline: varchar("headline", { length: 140 }), location: varchar("location", { length: 100 }), website: text("website"), linkedinUrl: text("linkedin_url"), resumeSummary: varchar("resume_summary", { length: 1200 }), portfolioVisible: boolean("portfolio_visible").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [uniqueIndex("profiles_username_unique").on(table.username), check("profiles_xp_non_negative", sql`${table.xp} >= 0`)]);
@@ -26,6 +29,9 @@ export const userLevelProgress = pgTable("user_level_progress", { userId: uuid("
 export const achievementDefinitions = pgTable("achievement_definitions", { id: varchar("id", { length: 60 }).primaryKey(), title: varchar("title", { length: 100 }).notNull(), description: varchar("description", { length: 180 }).notNull(), icon: varchar("icon", { length: 32 }).notNull(), threshold: integer("threshold").notNull() });
 export const userAchievements = pgTable("user_achievements", { userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), achievementId: varchar("achievement_id", { length: 60 }).notNull().references(() => achievementDefinitions.id, { onDelete: "cascade" }), earnedAt: timestamp("earned_at", { withTimezone: true }).notNull().defaultNow() }, (table) => [primaryKey({ columns: [table.userId, table.achievementId] })]);
 export const aiReviews = pgTable("ai_reviews", { id: uuid("id").primaryKey().defaultRandom(), projectId: uuid("project_id").notNull().unique().references(() => projects.id, { onDelete: "cascade" }), model: varchar("model", { length: 100 }).notNull(), overallScore: integer("overall_score").notNull(), codeQualityScore: integer("code_quality_score").notNull(), performanceScore: integer("performance_score").notNull(), securityScore: integer("security_score").notNull(), structureScore: integer("structure_score").notNull(), strengths: jsonb("strengths").$type<string[]>().notNull(), weaknesses: jsonb("weaknesses").$type<string[]>().notNull(), suggestions: jsonb("suggestions").$type<string[]>().notNull(), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow() });
+export const certificates = pgTable("certificates", { id: uuid("id").primaryKey().defaultRandom(), userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), roadmapId: uuid("roadmap_id").notNull().references(() => roadmaps.id), verificationCode: varchar("verification_code", { length: 24 }).notNull().unique(), issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow() }, (table) => [uniqueIndex("certificates_user_roadmap_unique").on(table.userId, table.roadmapId)]);
+export const jobs = pgTable("jobs", { id: uuid("id").primaryKey().defaultRandom(), ownerId: uuid("owner_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), title: varchar("title", { length: 160 }).notNull(), company: varchar("company", { length: 120 }).notNull(), description: text("description").notNull(), location: varchar("location", { length: 100 }), remote: boolean("remote").notNull().default(true), applyUrl: text("apply_url"), isPublished: boolean("is_published").notNull().default(false), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(), closesAt: timestamp("closes_at", { withTimezone: true }) });
+export const jobApplications = pgTable("job_applications", { id: uuid("id").primaryKey().defaultRandom(), jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }), userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), note: varchar("note", { length: 1200 }), status: varchar("status", { length: 20 }).notNull().default("submitted"), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow() }, (table) => [uniqueIndex("job_applications_job_user_unique").on(table.jobId, table.userId)]);
 
 export const roadmapRelations = relations(roadmaps, ({ many }) => ({ levels: many(levels), learners: many(userRoadmaps) }));
 export const levelRelations = relations(levels, ({ one, many }) => ({ roadmap: one(roadmaps, { fields: [levels.roadmapId], references: [roadmaps.id] }), projects: many(projects) }));

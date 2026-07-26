@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="min-h-screen p-6 sm:p-10"><div className="skeleton h-8 w-36"/><div className="skeleton mt-10 h-12 w-2/3 max-w-xl"/><div className="skeleton mt-4 h-5 w-full max-w-2xl"/><div className="mt-10 grid gap-4 sm:grid-cols-3">{Array.from({length:3},(_,index)=><div key={index} className="skeleton h-48"/>)}</div></main>}

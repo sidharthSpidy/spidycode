@@ -1,0 +1,5 @@
+import Link from "next/link";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { CareerProfileForm } from "@/components/career/forms";
+import { getCurrentProfile } from "@/lib/auth/dal";
+export default async function ProfilePage() { const profile = await getCurrentProfile(); if (!profile) return null; return <DashboardShell><section className="mx-auto max-w-2xl"><p className="font-mono text-xs text-cyan-200">PROFILE & PORTFOLIO</p><h1 className="mt-2 text-3xl font-bold tracking-[-.05em]">Make your work discoverable.</h1><p className="mt-3 text-sm text-white/55">Your public portfolio: <Link className="font-semibold text-cyan-100" href={`/u/${profile.username}`}>spidycode.dev/u/{profile.username}</Link></p><CareerProfileForm profile={profile as unknown as Record<string, string | boolean | null>} /><Link href="/resume" className="mt-6 inline-block text-sm font-semibold text-violet-200 hover:text-violet-100">Preview printable resume →</Link></section></DashboardShell>; }

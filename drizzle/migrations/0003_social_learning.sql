@@ -24,6 +24,7 @@ create table public.challenges (
   xp_reward integer not null check (xp_reward > 0), cadence varchar(12) not null check (cadence in ('daily','weekly')),
   starts_at timestamptz not null, ends_at timestamptz not null, created_at timestamptz not null default now()
 );
+alter table public.challenges add constraint challenges_title_cadence_start_unique unique (title, cadence, starts_at);
 create table public.user_challenge_completions (user_id uuid not null references public.profiles(id) on delete cascade, challenge_id uuid not null references public.challenges(id) on delete cascade, completed_at timestamptz not null default now(), primary key (user_id, challenge_id));
 alter table public.challenges enable row level security; alter table public.user_challenge_completions enable row level security;
 create policy "active challenges are readable" on public.challenges for select using (true);
