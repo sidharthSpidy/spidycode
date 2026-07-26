@@ -1,0 +1,8 @@
+"use client";
+
+import { useActionState } from "react";
+import { LoaderCircle } from "lucide-react";
+import { completeOnboarding, type OnboardingState } from "@/actions/profile";
+import { Button } from "@/components/ui/button";
+
+export function OnboardingForm({ defaultName }: { defaultName: string }) { const [state, formAction, pending] = useActionState(completeOnboarding, {} as OnboardingState); return <form action={formAction} className="mt-8 grid gap-5"><label className="grid gap-2 text-sm font-medium">Your name<input required name="name" maxLength={100} defaultValue={defaultName} className="rounded-xl border border-white/10 bg-black/20 px-3.5 py-3 text-white outline-none focus:border-cyan-300/60 focus:ring-2 focus:ring-cyan-300/20" /></label><label className="grid gap-2 text-sm font-medium">Choose a username<span className="text-xs font-normal text-white/45">This will appear on your public profile.</span><div className="flex overflow-hidden rounded-xl border border-white/10 bg-black/20 focus-within:border-cyan-300/60 focus-within:ring-2 focus-within:ring-cyan-300/20"><span className="px-3.5 py-3 text-sm text-white/45">spidycode.dev/</span><input required name="username" minLength={3} maxLength={30} pattern="[a-z0-9_]+" className="min-w-0 flex-1 bg-transparent py-3 pr-3 outline-none" placeholder="your_name" /></div></label>{state.error && <p role="alert" className="rounded-lg bg-red-400/10 px-3 py-2 text-sm text-red-200">{state.error}</p>}<Button disabled={pending} type="submit" className="mt-2">{pending && <LoaderCircle className="size-4 animate-spin" />}Continue to dashboard</Button></form>; }
