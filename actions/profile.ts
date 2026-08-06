@@ -18,5 +18,4 @@ export async function completeOnboarding(_: OnboardingState, formData: FormData)
   if (error?.code === "23505") return { error: "That username is already taken." };
   if (error) return { error: "We couldn’t save your profile. Please try again." };
   revalidatePath("/dashboard");
-  redirect("/dashboard");
-}
+  redirect("/dashboard");  }
